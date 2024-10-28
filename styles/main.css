@@ -1,0 +1,70 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    background: url("https://png.pngtree.com/thumb_back/fw800/background/20230812/pngtree-lake-at-spring-morning-image_13083194.jpg");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(15px);
+}
+
+main {
+    flex: 1;
+}
+footer {
+    z-index: 1;
+    margin-top: 20px;
+}
+
+.glass {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.navbar-custom {
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 10px;
+
+    a {
+        color: white;
+        &:hover {
+            color: white;
+            font-weight: bold;
+        }
+    }
+}
+li, .navbar-toggler {
+    margin-left: 10px;
+}
+.active {
+    border: 1px solid white;
+    border-radius: 10px;
+
+    @media (max-width: 768px) {
+        border: none;
+        font-weight: bold;
+    }
+}
+
+.accordion-button {
+    border: none;
+}
+h1, h4, .accordion-item{
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
