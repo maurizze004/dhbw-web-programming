@@ -3,7 +3,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     width: 100%;
-    background: url("https://png.pngtree.com/thumb_back/fw800/background/20230812/pngtree-lake-at-spring-morning-image_13083194.jpg");
+    background: url("../background.jpg");
     background-size: cover;
     background-position: center;
     position: relative;

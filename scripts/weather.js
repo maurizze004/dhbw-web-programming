@@ -28,8 +28,11 @@ document.getElementById("searchButton").addEventListener("click", async function
         const condi = result.weather[0].description;
         const humidity = result.main.humidity;
         const wind = result.wind.speed;
+        const currentIcon = result.weather[0].icon;
         const lat = result.coord.lat;
         const long = result.coord.lon;
+
+        var iconElement = document.getElementById("currentIcon");
 
         //pasting results to html
         document.getElementById("cityName").textContent = `${city}`;
@@ -40,6 +43,7 @@ document.getElementById("searchButton").addEventListener("click", async function
 
         //clear input and show data when loaded for good looking
         document.getElementById("citySearch").value = "";
+        iconElement.setAttribute("src", `https://openweather.site/img/wn/${currentIcon}.png`);
         document.getElementById("weatherInfo").style.display = "block";
 
         //calling second endpoint -> forecast for 24h
@@ -56,7 +60,27 @@ document.getElementById("searchButton").addEventListener("click", async function
             document.getElementById("forecastError").textContent = `Redirect Error - STATUS: ${forecastResponse.status}`;
         }
 
-        //proceeding as above
+        //fetch first 8 entries from the forecast data
+        const forecastEntries = forecastResult.list.slice(0, 8).map(entry => {
+            return {
+                temperature: (entry.main.temp - 32) * 5 / 9,
+                icon: entry.weather[0].icon,
+                time: formatTime(entry.dt_txt)
+            };
+        });
+
+        forecastEntries.forEach(entry => {
+            const forecastDiv = document.createElement('div');
+
+            forecastDiv.className = 'text-center glass shadow me-2';
+            forecastDiv.innerHTML = `
+                <p class="text-center" style="margin-bottom: -3px">${entry.dateTime} Uhr</p>
+                <img style="font-size: 50px;" src="https://openweather.site/img/wn/${entry.icon}.png">
+                <h5 class="text-center">${entry.temperature.toFixed(0)} °C</h5>
+            `;
+
+            document.getElementById("forecastContainer").appendChild(forecastDiv);
+        });
 
     } catch (error) {
         console.log(error);
