@@ -6,90 +6,94 @@ const options = {
     }
 };
 
+const KELVIN_TO_CELSIUS = 273.15;
+const FAHRENHEIT_TO_CELSIUS = (temp) => (temp - 32) * 5 / 9;
+
+async function fetchWeatherData(url) {
+    const response = await fetch(url, options);
+    const result = await response.json();
+
+    if (!response.ok) {
+        handleFetchError(response.status);
+        throw new Error(`Error: ${response.status}`);
+    }
+
+    return result;
+}
+
+function handleFetchError(status) {
+    const errorElement = document.getElementById("error");
+    if (status === 429) {
+        errorElement.textContent = 'Zu viele Zugriffe - STATUS: 429';
+    } else if (status >= 500) {
+        errorElement.textContent = `Server Error - STATUS: ${status}`;
+    } else if (status >= 300 && status < 400) {
+        errorElement.textContent = `Redirect Error - STATUS: ${status}`;
+    }
+}
+
+function displayCurrentWeather(result, city) {
+    const temperature = FAHRENHEIT_TO_CELSIUS(result.main.temp);
+    const { description: condi, icon: currentIcon } = result.weather[0];
+    const humidity = result.main.humidity;
+    const wind = result.wind.speed;
+    const { lat, lon: long } = result.coord;
+
+    document.getElementById("cityName").textContent = city;
+    document.getElementById("temperature").textContent = `${temperature.toFixed(0)} °C`;
+    document.getElementById("condition").textContent = condi;
+    document.getElementById("windSpeed").textContent = `${wind} km/h`;
+    document.getElementById("humidity").textContent = `${humidity} %`;
+    document.getElementById("citySearch").value = "";
+
+    const iconElement = document.getElementById("currentIcon");
+    iconElement.setAttribute("src", `https://openweather.site/img/wn/${currentIcon}.png`);
+    document.getElementById("weatherInfo").style.display = "block";
+
+    return { lat, long, currentIcon };
+}
+
+function displayForecast(forecastEntries) {
+    const forecastContainer = document.getElementById("forecastContainer");
+    forecastContainer.innerHTML = ''; // Clear previous entries
+
+    forecastEntries.forEach(entry => {
+        const forecastDiv = document.createElement('div');
+        forecastDiv.className = 'text-center glass shadow me-2';
+        forecastDiv.innerHTML = `
+            <p class="text-center" style="margin-bottom: -3px">${formatTime(entry.time)} Uhr</p>
+            <img style="width: 125px;" src="https://openweather.site/img/wn/${entry.icon}.png">
+            <h4 class="text-center">${entry.temperature.toFixed(0)} °C</h4>
+        `;
+        forecastContainer.appendChild(forecastDiv);
+    });
+}
+
 document.getElementById("searchButton").addEventListener("click", async function() {
-    var city = document.getElementById("citySearch").value;
-    const current = `https://open-weather13.p.rapidapi.com/city/${city}/DE`;
+    const city = document.getElementById("citySearch").value;
+    const currentUrl = `https://open-weather13.p.rapidapi.com/city/${city}/DE`;
 
     try {
-        const response = await fetch(current, options);
-        const result = await response.json();
+        const currentWeather = await fetchWeatherData(currentUrl);
+        const { lat, long } = displayCurrentWeather(currentWeather, city);
 
-        //casting some status errors
-        if (response.status === 429) {
-            document.getElementById("error").textContent = 'Zu viele Zugriffe - STATUS: 429';
-        } else if (response.status >= 500) {
-            document.getElementById("error").textContent = `Server Error - STATUS: ${response.status}`;
-        } else if (response.status >= 300 && response.status < 400) {
-            document.getElementById("error").textContent = `Redirect Error - STATUS: ${response.status}`;
-        }
-
-        //continuing with fetching results
-        const temperature = (result.main.temp - 32) * 5 / 9;
-        const condi = result.weather[0].description;
-        const humidity = result.main.humidity;
-        const wind = result.wind.speed;
-        const currentIcon = result.weather[0].icon;
-        const lat = result.coord.lat;
-        const long = result.coord.lon;
-
-        var iconElement = document.getElementById("currentIcon");
-
-        //pasting results to html
-        document.getElementById("cityName").textContent = `${city}`;
-        document.getElementById("temperature").textContent = `${temperature.toFixed(0)} °C`;
-        document.getElementById("condition").textContent = `${condi}`;
-        document.getElementById("windSpeed").textContent = `${wind} km/h`;
-        document.getElementById("humidity").textContent = `${humidity} %`;
-
-        //clear input and show data when loaded for good looking
-        document.getElementById("citySearch").value = "";
-        iconElement.setAttribute("src", `https://openweather.site/img/wn/${currentIcon}.png`);
-        document.getElementById("weatherInfo").style.display = "block";
-
-        //calling second endpoint -> forecast for 24h
+        // Fetching forecast
         const forecastUrl = `https://open-weather13.p.rapidapi.com/city/fivedaysforcast/${lat}/${long}`;
-        const forecastResponse = await fetch(forecastUrl, options);
-        const forecastResult = await forecastResponse.json();
+        const forecastData = await fetchWeatherData(forecastUrl);
 
-        //casting again some status erros
-        if (forecastResponse.status === 429) {
-            document.getElementById("forecastError").textContent = 'Zu viele Zugriffe - STATUS: 429';
-        } else if (forecastResponse.status >= 500) {
-            document.getElementById("forecastError").textContent = `Server Error - STATUS: ${forecastResponse.status}`;
-        } else if (forecastResponse.status >= 300 && response.status < 400) {
-            document.getElementById("forecastError").textContent = `Redirect Error - STATUS: ${forecastResponse.status}`;
-        }
+        const forecastEntries = forecastData.list.slice(1, 10).map(entry => ({
+            temperature: entry.main.temp - KELVIN_TO_CELSIUS,
+            icon: entry.weather[0].icon,
+            time: entry.dt_txt
+        }));
 
-        //fetch first 8 entries from the forecast data
-        const forecastEntries = forecastResult.list.slice(1, 10).map(entry => {
-            return {
-                temperature: entry.main.temp - 273.15, //converting Kelvin to Celsius
-                icon: entry.weather[0].icon,
-                time: entry.dt_txt
-            };
-        });
-
-        forecastEntries.forEach(entry => {
-            const forecastDiv = document.createElement('div');
-
-            forecastDiv.className = 'text-center glass shadow me-2';
-            forecastDiv.innerHTML = `
-                <p class="text-center" style="margin-bottom: -3px">${formatTime(entry.time)} Uhr</p>
-                <img style="width: 125px;" src="https://openweather.site/img/wn/${entry.icon}.png">
-                <h4 class="text-center">${entry.temperature.toFixed(0)} °C</h4>
-            `;
-
-            document.getElementById("forecastContainer").appendChild(forecastDiv);
-        });
-
+        displayForecast(forecastEntries);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 });
 
 function formatTime(dateTimeString) {
     const date = new Date(dateTimeString);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
