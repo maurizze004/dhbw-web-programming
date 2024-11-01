@@ -1,7 +1,7 @@
 const options = {
     method: 'GET',
     headers: {
-        'x-rapidapi-key': '5d2cd2f2e9msha6ac34ec7337ac7p134ba0jsnc850e676e646',
+        'x-rapidapi-key': 'fbf70f7fdbmsh937e53d37ab5260p1de2c9jsn1871eaa3139e',
         'x-rapidapi-host': 'open-weather13.p.rapidapi.com'
     }
 };
@@ -61,11 +61,11 @@ document.getElementById("searchButton").addEventListener("click", async function
         }
 
         //fetch first 8 entries from the forecast data
-        const forecastEntries = forecastResult.list.slice(0, 8).map(entry => {
+        const forecastEntries = forecastResult.list.slice(1, 10).map(entry => {
             return {
-                temperature: (entry.main.temp - 32) * 5 / 9,
+                temperature: entry.main.temp - 273.15, //converting Kelvin to Celsius
                 icon: entry.weather[0].icon,
-                time: formatTime(entry.dt_txt)
+                time: entry.dt_txt
             };
         });
 
@@ -74,9 +74,9 @@ document.getElementById("searchButton").addEventListener("click", async function
 
             forecastDiv.className = 'text-center glass shadow me-2';
             forecastDiv.innerHTML = `
-                <p class="text-center" style="margin-bottom: -3px">${entry.dateTime} Uhr</p>
-                <img style="font-size: 50px;" src="https://openweather.site/img/wn/${entry.icon}.png">
-                <h5 class="text-center">${entry.temperature.toFixed(0)} °C</h5>
+                <p class="text-center" style="margin-bottom: -3px">${formatTime(entry.time)} Uhr</p>
+                <img style="width: 125px;" src="https://openweather.site/img/wn/${entry.icon}.png">
+                <h4 class="text-center">${entry.temperature.toFixed(0)} °C</h4>
             `;
 
             document.getElementById("forecastContainer").appendChild(forecastDiv);
@@ -87,8 +87,9 @@ document.getElementById("searchButton").addEventListener("click", async function
     }
 });
 
-function formatTime(dateString) {
-    const [date, time] = dateString.split(' ');
-    const [hours, minutes] = time.split(':');
+function formatTime(dateTimeString) {
+    const date = new Date(dateTimeString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
 }
