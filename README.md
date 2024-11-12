@@ -2,6 +2,7 @@
 
 ## Overview
 This is a weather app that allows users to retrieve current weather data for various cities. For more information about the website, please refer to the "FAQ" section.
+I am using this API in the free version, so the requests are limited to 50 per month. It can be that there will be a respone of 429 
 
 ## Usage
 To use the app:
