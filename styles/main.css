@@ -8,6 +8,7 @@ body {
     background-position: center;
     position: relative;
 }
+
 body::before {
     content: "";
     position: fixed;
@@ -22,6 +23,7 @@ body::before {
 main {
     flex: 1;
 }
+
 footer {
     z-index: 1;
     margin-top: 20px;
@@ -47,9 +49,11 @@ footer {
         }
     }
 }
+
 li, .navbar-toggler {
     margin-left: 10px;
 }
+
 .active {
     border: 1px solid white;
     border-radius: 10px;
@@ -63,6 +67,7 @@ li, .navbar-toggler {
 .accordion-button {
     border: none;
 }
+
 h1, h4, .accordion-item{
     position: relative;
     z-index: 2;
